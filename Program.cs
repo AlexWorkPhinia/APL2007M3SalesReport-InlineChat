@@ -33,22 +33,28 @@ namespace ReportGenerator
             public int volumeDiscount;
         }
 
+        public struct ProdDepartments
+        {
+            public static string[] departmentNames = { "Electronics", "Clothing", "Home Goods", "Toys", "Sporting Goods", "Books", "Food", "Health & Beauty" };
+            public static string[] departmentAbbreviations = { "ELEC", "CLTH", "HOME", "TOYS", "SPRT", "BOOK", "FOOD", "HB" };
+
+        }
+
+        public struct ManufacturingSites
+        {
+            public static string[] manufacturingSites = { "US1", "US2", "US3", "CA1", "CA2", "CA3", "MX1", "MX2", "MX3", "EU1" };
+        }
+
         /* the GenerateSalesData method returns 1000 SalesData records. It assigns random values to each field of the data structure */
         public SalesData[] GenerateSalesData()
         {
             SalesData[] salesData = new SalesData[10000];
             Random random = new Random();
             
-            /* 1. departmentName should be randomly selected from a list of 8 departments
-               2. for each department name, create a 4-character abbreviation that can be included in productID */
-            string[] departments = { "Electronics", "Clothing", "Home Goods", "Toys", "Sporting Goods", "Books", "Food", "Health & Beauty" };
-            string[] departmentAbbreviations = { "ELEC", "CLTH", "HOME", "TOYS", "SPRT", "BOOK", "FOOD", "HB" };
-            string[] manufacturingSites = { "US1", "US2", "US3", "CA1", "CA2", "CA3", "MX1", "MX2", "MX3", "EU1" };
-
             for (int i = 0; i < 10000; i++)
             {
                 salesData[i].dateSold = new DateOnly(2023, random.Next(1, 13), random.Next(1, 29));
-                salesData[i].departmentName = departments[random.Next(departments.Length)];
+                salesData[i].departmentName = ProdDepartments.departmentNames[random.Next(ProdDepartments.departmentNames.Length)];
 
                 /* productID should be formatted using the pattern "DDDD-###-SS-CC-MMM" where the components of the ID are defined as
                  follows:
@@ -62,9 +68,9 @@ namespace ReportGenerator
                 country code followed by a digit (e.g., US1, CA2, MX3, etc.).
                 */
 
-                salesData[i].productID = departmentAbbreviations[random.Next(departmentAbbreviations.Length)] + "-" + 
+                salesData[i].productID = ProdDepartments.departmentAbbreviations[random.Next(ProdDepartments.departmentAbbreviations.Length)] + "-" + 
                                         random.Next(1, 999) + "-" + (char)random.Next('A', 'Z') + (char)random.Next('A', 'Z') + "-" + 
-                                        manufacturingSites[random.Next(manufacturingSites.Length)];
+                                        ManufacturingSites.manufacturingSites[random.Next(ManufacturingSites.manufacturingSites.Length)];
                 salesData[i].quantitySold = random.Next(1, 101);
                 salesData[i].unitPrice = random.Next(25, 300) + random.NextDouble();
 
@@ -135,9 +141,34 @@ namespace ReportGenerator
                 foreach (var department in quarterlySales[quarter])
                 {
                 double profitPercentage = quarterlyProfit[quarter][department.Key] / quarterlySales[quarter][department.Key] * 100;
-                Console.WriteLine("  {0}: Sales = ${1}, Profit = ${2}, Profit Percentage = {3}%", department.Key, department.Value, quarterlyProfit[quarter][department.Key], profitPercentage);
+                string currencySymbol = GetCurrencySymbol(department.Key);
+                Console.WriteLine("  {0}: Sales = {1}{2}, Profit = {1}{3}, Profit Percentage = {4}%", department.Key, currencySymbol, department.Value, quarterlyProfit[quarter][department.Key], profitPercentage);
                 }
             }
+            }
+        }
+
+        private string GetCurrencySymbol(string manufacturingSites)
+        {
+            if (manufacturingSites.Contains("US"))
+            {
+            return "$";
+            }
+            else if (manufacturingSites.Contains("CA"))
+            {
+            return "C$";
+            }
+            else if (manufacturingSites.Contains("MX"))
+            {
+            return "P$";
+            }
+            else if (manufacturingSites.Contains("EU"))
+            {
+            return "€";
+            }
+            else
+            {
+            return "$"; // Default to USD if no match
             }
         }
 
